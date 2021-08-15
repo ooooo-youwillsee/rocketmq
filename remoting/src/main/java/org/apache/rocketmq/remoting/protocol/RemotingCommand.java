@@ -75,6 +75,7 @@ public class RemotingCommand {
     private int opaque = requestId.getAndIncrement();
     private int flag = 0;
     private String remark;
+    // 所有的头信息都会先放在这里, 然后反射转化为 customHeader
     private HashMap<String, String> extFields;
     private transient CommandCustomHeader customHeader;
 
@@ -97,6 +98,7 @@ public class RemotingCommand {
         if (configVersion >= 0) {
             cmd.setVersion(configVersion);
         } else {
+            // 在启动类中设置了
             String v = System.getProperty(REMOTING_VERSION_KEY);
             if (v != null) {
                 int value = Integer.parseInt(v);
@@ -231,6 +233,7 @@ public class RemotingCommand {
         this.customHeader = customHeader;
     }
 
+    // 就是把extFields中的数据，通过反射设置到classHeader实例中
     public CommandCustomHeader decodeCommandCustomHeader(
         Class<? extends CommandCustomHeader> classHeader) throws RemotingCommandException {
         CommandCustomHeader objectHeader;
@@ -368,6 +371,7 @@ public class RemotingCommand {
         }
     }
 
+    // 把自定义的header对象通过反射转变为extFields
     public void makeCustomHeaderToNet() {
         if (this.customHeader != null) {
             Field[] fields = getClazzFields(customHeader.getClass());
@@ -406,6 +410,7 @@ public class RemotingCommand {
 
         // 2> header data length
         byte[] headerData;
+        // 如果是json序列化，在remotingCommand中标记为transient的不会转化
         headerData = this.headerEncode();
 
         length += headerData.length;
@@ -413,9 +418,11 @@ public class RemotingCommand {
         // 3> body data length
         length += bodyLength;
 
+        // 4 + length - bodyLength =>  4 (头长度) + 4 *（协议类型长度） + 头数据长度
         ByteBuffer result = ByteBuffer.allocate(4 + length - bodyLength);
 
         // length
+        // 这个长度就总长度
         result.putInt(length);
 
         // header length

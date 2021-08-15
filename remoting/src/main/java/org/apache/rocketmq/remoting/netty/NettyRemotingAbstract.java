@@ -190,6 +190,7 @@ public abstract class NettyRemotingAbstract {
      * @param cmd request command.
      */
     public void processRequestCommand(final ChannelHandlerContext ctx, final RemotingCommand cmd) {
+        // 在启动时已经注册了
         final Pair<NettyRequestProcessor, ExecutorService> matched = this.processorTable.get(cmd.getCode());
         final Pair<NettyRequestProcessor, ExecutorService> pair = null == matched ? this.defaultRequestProcessor : matched;
         final int opaque = cmd.getOpaque();
@@ -207,6 +208,7 @@ public abstract class NettyRemotingAbstract {
                                 if (!cmd.isOnewayRPC()) {
                                     if (response != null) {
                                         response.setOpaque(opaque);
+                                        // 标记为返回类型
                                         response.markResponseType();
                                         try {
                                             ctx.writeAndFlush(response);
@@ -220,6 +222,7 @@ public abstract class NettyRemotingAbstract {
                                 }
                             }
                         };
+                        // 执行对应的NettyRequestProcessor
                         if (pair.getObject1() instanceof AsyncNettyRequestProcessor) {
                             AsyncNettyRequestProcessor processor = (AsyncNettyRequestProcessor)pair.getObject1();
                             processor.asyncProcessRequest(ctx, cmd, callback);
@@ -296,6 +299,7 @@ public abstract class NettyRemotingAbstract {
                 executeInvokeCallback(responseFuture);
             } else {
                 responseFuture.putResponse(cmd);
+                // 异步请求的限流
                 responseFuture.release();
             }
         } else {
