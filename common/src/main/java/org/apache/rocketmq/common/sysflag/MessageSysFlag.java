@@ -20,8 +20,11 @@ public class MessageSysFlag {
     public final static int COMPRESSED_FLAG = 0x1;
     public final static int MULTI_TAGS_FLAG = 0x1 << 1;
     public final static int TRANSACTION_NOT_TYPE = 0;
+    // 二进制表示 00000100
     public final static int TRANSACTION_PREPARED_TYPE = 0x1 << 2;
+    // 二进制表示 00001000
     public final static int TRANSACTION_COMMIT_TYPE = 0x2 << 2;
+    // 二进制表示 00001100
     public final static int TRANSACTION_ROLLBACK_TYPE = 0x3 << 2;
     public final static int BORNHOST_V6_FLAG = 0x1 << 4;
     public final static int STOREHOSTADDRESS_V6_FLAG = 0x1 << 5;

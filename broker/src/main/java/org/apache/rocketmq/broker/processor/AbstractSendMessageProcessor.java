@@ -88,6 +88,8 @@ public abstract class AbstractSendMessageProcessor extends AsyncNettyRequestProc
         mqtraceContext.setBornTimeStamp(requestHeader.getBornTimestamp());
 
         Map<String, String> properties = MessageDecoder.string2messageProperties(requestHeader.getProperties());
+        // PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX 不是批量消息才会设置。
+        // 代码位置： org.apache.rocketmq.common.message.MessageClientIDSetter.setUniqID
         String uniqueKey = properties.get(MessageConst.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX);
         properties.put(MessageConst.PROPERTY_MSG_REGION, this.brokerController.getBrokerConfig().getRegionId());
         properties.put(MessageConst.PROPERTY_TRACE_SWITCH, String.valueOf(this.brokerController.getBrokerConfig().isTraceOn()));
@@ -193,6 +195,7 @@ public abstract class AbstractSendMessageProcessor extends AsyncNettyRequestProc
             }
 
             log.warn("the topic {} not exist, producer: {}", requestHeader.getTopic(), ctx.channel().remoteAddress());
+            // autoCreateTopicEnable 为 true， 就会创建topic
             topicConfig = this.brokerController.getTopicConfigManager().createTopicInSendMessageMethod(
                 requestHeader.getTopic(),
                 requestHeader.getDefaultTopic(),
@@ -200,6 +203,7 @@ public abstract class AbstractSendMessageProcessor extends AsyncNettyRequestProc
                 requestHeader.getDefaultTopicQueueNums(), topicSysFlag);
 
             if (null == topicConfig) {
+                // topic 为 消费组的重试topic，这个必须创建成功，否则的话，消息者就不能消费重试消息了
                 if (requestHeader.getTopic().startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
                     topicConfig =
                         this.brokerController.getTopicConfigManager().createTopicInSendMessageBackMethod(

@@ -110,6 +110,7 @@ public class MixAll {
         return DLQ_GROUP_TOPIC_PREFIX + consumerGroup;
     }
 
+    // vip channel 就是broker多开了一个fastRemotingServer，端口就是broker的端口+2
     public static String brokerVIPChannel(final boolean isChange, final String brokerAddr) {
         if (isChange) {
             int split = brokerAddr.lastIndexOf(":");

@@ -142,6 +142,7 @@ public class DefaultMessageStore implements MessageStore {
         } else {
             this.haService = null;
         }
+        // 负责提交 dispatchRequest，来构建 consumerQueue 和 index
         this.reputMessageService = new ReputMessageService();
 
         this.scheduleMessageService = new ScheduleMessageService(this);
@@ -154,8 +155,10 @@ public class DefaultMessageStore implements MessageStore {
 
         this.allocateMappedFileService.start();
 
+        // 负责构建消息索引
         this.indexService.start();
 
+        // dispatcher 的实现类
         this.dispatcherList = new LinkedList<>();
         this.dispatcherList.addLast(new CommitLogDispatcherBuildConsumeQueue());
         this.dispatcherList.addLast(new CommitLogDispatcherBuildIndex());

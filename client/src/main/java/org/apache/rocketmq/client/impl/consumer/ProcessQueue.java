@@ -285,6 +285,7 @@ public class ProcessQueue {
             this.treeMapLock.writeLock().lockInterruptibly();
             try {
                 for (MessageExt msg : msgs) {
+                    // 重新放回msgTreeMap中，因为是treeMap结构，后面再次消费又是有序的
                     this.consumingMsgOrderlyTreeMap.remove(msg.getQueueOffset());
                     this.msgTreeMap.put(msg.getQueueOffset(), msg);
                 }

@@ -22,6 +22,7 @@ public class PullRequest {
     private String consumerGroup;
     private MessageQueue messageQueue;
     private ProcessQueue processQueue;
+    // 下次要拉取的offset
     private long nextOffset;
     private boolean previouslyLocked = false;
 

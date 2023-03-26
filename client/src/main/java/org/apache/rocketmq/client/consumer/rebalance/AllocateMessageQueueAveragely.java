@@ -42,6 +42,7 @@ public class AllocateMessageQueueAveragely implements AllocateMessageQueueStrate
             throw new IllegalArgumentException("cidAll is null or cidAll empty");
         }
 
+        // currentCID 必须在 cidAll 中
         List<MessageQueue> result = new ArrayList<MessageQueue>();
         if (!cidAll.contains(currentCID)) {
             log.info("[BUG] ConsumerGroup: {} The consumerId: {} not in cidAll: {}",
@@ -51,8 +52,12 @@ public class AllocateMessageQueueAveragely implements AllocateMessageQueueStrate
             return result;
         }
 
+        // 当前cid的位置
         int index = cidAll.indexOf(currentCID);
+        // 平均分配之后还剩多少个
         int mod = mqAll.size() % cidAll.size();
+        // mod > 0 && index < mod 表示可以分配多一个
+        // mqAll.size() / cidAll.size() 表示平均分配的个数
         int averageSize =
             mqAll.size() <= cidAll.size() ? 1 : (mod > 0 && index < mod ? mqAll.size() / cidAll.size()
                 + 1 : mqAll.size() / cidAll.size());

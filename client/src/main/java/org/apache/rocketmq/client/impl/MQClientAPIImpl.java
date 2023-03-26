@@ -451,6 +451,7 @@ public class MQClientAPIImpl {
         boolean isReply = msgType != null && msgType.equals(MixAll.REPLY_MESSAGE_FLAG);
         if (isReply) {
             if (sendSmartMsg) {
+                // 就是使用短的变量名
                 SendMessageRequestHeaderV2 requestHeaderV2 = SendMessageRequestHeaderV2.createSendMessageRequestHeaderV2(requestHeader);
                 request = RemotingCommand.createRequestCommand(RequestCode.SEND_REPLY_MESSAGE_V2, requestHeaderV2);
             } else {
@@ -670,6 +671,7 @@ public class MQClientAPIImpl {
         SendMessageResponseHeader responseHeader =
                 (SendMessageResponseHeader) response.decodeCommandCustomHeader(SendMessageResponseHeader.class);
 
+        // 异步发送时，用tmpMessage
         //If namespace not null , reset Topic without namespace.
         String topic = msg.getTopic();
         if (StringUtils.isNotEmpty(this.clientConfig.getNamespace())) {

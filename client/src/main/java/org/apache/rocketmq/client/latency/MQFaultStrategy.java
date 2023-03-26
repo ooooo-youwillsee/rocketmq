@@ -57,6 +57,7 @@ public class MQFaultStrategy {
 
     public MessageQueue selectOneMessageQueue(final TopicPublishInfo tpInfo, final String lastBrokerName) {
         if (this.sendLatencyFaultEnable) {
+            // 首先通过延迟故障策略来选择,因为send失败之后，会加入延迟故障
             try {
                 int index = tpInfo.getSendWhichQueue().incrementAndGet();
                 for (int i = 0; i < tpInfo.getMessageQueueList().size(); i++) {
@@ -78,6 +79,7 @@ public class MQFaultStrategy {
                     }
                     return mq;
                 } else {
+                    // 选择的brokerName在topicPublicInfo中没有
                     latencyFaultTolerance.remove(notBestBroker);
                 }
             } catch (Exception e) {

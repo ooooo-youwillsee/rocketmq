@@ -276,7 +276,7 @@ public class MQClientInstance {
             @Override
             public void run() {
                 try {
-                    //todo 从namesrv中更新topicConfig
+                    // 从namesrv中更新topicConfig
                     MQClientInstance.this.updateTopicRouteInfoFromNameServer();
                 } catch (Exception e) {
                     log.error("ScheduledTask updateTopicRouteInfoFromNameServer exception", e);
@@ -290,6 +290,7 @@ public class MQClientInstance {
             public void run() {
                 try {
                     MQClientInstance.this.cleanOfflineBroker();
+                    // 发送心跳，会返回版本号, 心跳数据中包含了clientId
                     MQClientInstance.this.sendHeartbeatToAllBrokerWithLock();
                 } catch (Exception e) {
                     log.error("ScheduledTask sendHeartbeatToAllBroker exception", e);
@@ -447,6 +448,7 @@ public class MQClientInstance {
                 }
                 // may need to check one broker every cluster...
                 // assume that the configs of every broker in cluster are the the same.
+                // 查找topic任意一台broker的地址，如果没有master，就会选择一个salve
                 String addr = findBrokerAddrByTopic(subscriptionData.getTopic());
 
                 if (addr != null) {
@@ -614,7 +616,7 @@ public class MQClientInstance {
                 try {
                     TopicRouteData topicRouteData;
                     if (isDefault && defaultMQProducer != null) {
-                        // todo
+                        // todo 什么时候会执行这个？
                         topicRouteData = this.mQClientAPIImpl.getDefaultTopicRouteInfoFromNameServer(defaultMQProducer.getCreateTopicKey(),
                             1000 * 3);
                         if (topicRouteData != null) {

@@ -58,8 +58,10 @@ public class RebalancePushImpl extends RebalanceImpl {
         log.info("{} Rebalance changed, also update version: {}, {}", topic, subscriptionData.getSubVersion(), newVersion);
         subscriptionData.setSubVersion(newVersion);
 
+        // 重新分配consumerQueue之后， 这个processQueueTable就变化了，这时候就需要重新控制阈值
         int currentQueueCount = this.processQueueTable.size();
         if (currentQueueCount != 0) {
+            // topic 均分给每个messageQueue, 也就是对应的processQueue的消息总数
             int pullThresholdForTopic = this.defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getPullThresholdForTopic();
             if (pullThresholdForTopic != -1) {
                 int newVal = Math.max(1, pullThresholdForTopic / currentQueueCount);
@@ -70,6 +72,7 @@ public class RebalancePushImpl extends RebalanceImpl {
 
             int pullThresholdSizeForTopic = this.defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getPullThresholdSizeForTopic();
             if (pullThresholdSizeForTopic != -1) {
+                // topic 均分给每个messageQueue, 也就是对应的processQueue的消息大小总数
                 int newVal = Math.max(1, pullThresholdSizeForTopic / currentQueueCount);
                 log.info("The pullThresholdSizeForQueue is changed from {} to {}",
                     this.defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getPullThresholdSizeForQueue(), newVal);
@@ -77,12 +80,14 @@ public class RebalancePushImpl extends RebalanceImpl {
             }
         }
 
+        // 在上面的代码中，更新了subscriptionData的subVersion
         // notify broker
         this.getmQClientFactory().sendHeartbeatToAllBrokerWithLock();
     }
 
     @Override
     public boolean removeUnnecessaryMessageQueue(MessageQueue mq, ProcessQueue pq) {
+        // persist(mq) 操作可能会发生异常，结果就是会造成重复消费
         this.defaultMQPushConsumerImpl.getOffsetStore().persist(mq);
         this.defaultMQPushConsumerImpl.getOffsetStore().removeOffset(mq);
         if (this.defaultMQPushConsumerImpl.isConsumeOrderly()
@@ -112,6 +117,7 @@ public class RebalancePushImpl extends RebalanceImpl {
 
     private boolean unlockDelay(final MessageQueue mq, final ProcessQueue pq) {
 
+        // 就是从messageQueue拿到processQueue中的消息，没有被消费完
         if (pq.hasTempMessage()) {
             log.info("[{}]unlockDelay, begin {} ", mq.hashCode(), mq);
             this.defaultMQPushConsumerImpl.getmQClientFactory().getScheduledExecutorService().schedule(new Runnable() {
